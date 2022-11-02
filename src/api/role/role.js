@@ -14,6 +14,34 @@ export default {
       url: `${api_name}${id}`,
       method: 'delete'
     })
+  },
+  saveRole(role) {
+    return request({
+      url: `${api_name}save`,
+      method: 'post',
+      // 传递json格式
+      data: role
+    })
+  },
+  getRole(id) {
+    return request({
+      url: `${api_name}findRoleById/${id}`,
+      method: 'get'
+    })
+  },
+  updateRole(role) {
+    return request({
+      url: `${api_name}updateRoleById`,
+      method: 'post',
+      data: role
+    })
+  },
+  batchRemoveByIds(ids) {
+    return request({
+      url: `${api_name}batchDelete`,
+      method: 'delete',
+      data: ids
+    })
   }
 }
 
