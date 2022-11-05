@@ -55,7 +55,7 @@
         <template slot-scope="scope">
           <el-switch
           v-model="scope.row.status === 1"
-          @click="switchStatus(scope.row)"></el-switch>
+          @change="switchStatus(scope.row)"></el-switch>
         </template>
       </el-table-column>
       <el-table-column prop="createTime" label="创建时间"></el-table-column>
@@ -145,6 +145,59 @@ export default {
     resetData() {
       Object.assign(this.$data, this.$options.data())
       this.getData()
+    },
+    add() {
+      this.dialogVisible = true
+      this.sysUser = {}
+    },
+    saveOrUpdate() {
+      if (!this.sysUser.id) {
+        this.saveUser()
+      } else {
+        this.updateUser()
+      }
+    },
+    saveUser() {
+      api.save(this.sysUser).then(res => {
+        this.$message.success('操作成功')
+        this.dialogVisible = false
+        this.getData()
+      })
+    },
+    updateUser() {
+      api.updateUser(this.sysUser).then(res => {
+        this.$message.success('操作成功')
+        this.dialogVisible = false
+        this.getData()
+      })
+    },
+    edit(id) {
+      this.dialogVisible = true
+      api.getUser(id).then(res => {
+        this.sysUser = res.data
+      })
+    },
+    removeDataById(id) {
+      this.$confirm('此操作将永久删除，是否继续？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        api.removeById(id).then(res => {
+          this.$message({
+            type: 'success',
+            message: '删除成功'
+          })
+          this.getData()
+        })
+      })
+    },
+    switchStatus(row) {
+      row.status = row.status === 1 ? 0 : 1
+      api.updateStatusById(row.id, row.status).then(res => {
+        this.$message.success(res.message || '操作成功')
+        this.getData()
+      })
     }
   }
 }

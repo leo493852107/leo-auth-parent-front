@@ -44,6 +44,13 @@ export default {
       method: 'delete',
       data: ids
     })
+  },
+  // 更改用户状态
+  updateStatusById(id, status) {
+    return request({
+      url: `${api_name}updateStatus/${id}/${status}`,
+      method: 'get'
+    })
   }
 }
 
