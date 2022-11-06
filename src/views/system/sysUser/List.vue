@@ -64,6 +64,7 @@
         <template slot-scope="scope">
           <el-button type="primary" icon="el-icon-edit" size="mini" @click="edit(scope.row.id)" title="修改"></el-button>
           <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeDataById(scope.row.id)" title="删除"></el-button>
+          <el-button type="warning" icon="el-icon-baseball" size="mini" @click="showAssignRole(scope.row)" title="分配角色"></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -79,6 +80,24 @@
       @current-change="getData">
     </el-pagination>
 
+    <el-dialog title="分配角色" :visible.sync="dialogRoleVisible">
+      <el-form label-width="80px">
+        <el-form-item label="用户名">
+          <el-input disabled :value="sysUser.username"></el-input>
+        </el-form-item>
+        <el-form-item label="角色列表">
+          <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+          <div style="margin: 15px 0;"></div>
+          <el-checkbox-group v-model="userRoleIds" @change="handleCheckedChange">
+            <el-checkbox v-for="role in allRoles" :key="role.id" :label="role.id">{{role.roleName}}</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+      </el-form>
+      <div slot="footer">
+        <el-button type="primary" @click="assignRole" size="small">保存</el-button>
+        <el-button @click="dialogRoleVisible=false" size="small">取消</el-button>
+      </div>
+    </el-dialog>
     <el-dialog title="添加/修改" :visible.sync="dialogVisible" width="40%">
       <el-form ref="dataForm" :model="sysUser" label-width="100px" size="small" style="padding-right: 40px;">
         <el-form-item label="用户名">
@@ -105,6 +124,7 @@
 
 <script>
 import api from '@/api/system/user'
+import roleApi from '@/api/system/role'
 
 export default {
   name: 'List',
@@ -119,7 +139,13 @@ export default {
       total: 0,
       dialogVisible: false,
       sysUser: {},
-      saveBtnDisabled: false
+      saveBtnDisabled: false,
+
+      dialogRoleVisible: false,
+      allRoles: [],
+      userRoleIds: [],
+      isIndeterminate: false,
+      checkAll: false
     }
   },
   created() {
@@ -197,6 +223,44 @@ export default {
       api.updateStatusById(row.id, row.status).then(res => {
         this.$message.success(res.message || '操作成功')
         this.getData()
+      })
+    },
+    // 展示分配角色
+    showAssignRole(row) {
+      this.sysUser = row
+      this.dialogRoleVisible = true
+      roleApi.getRolesByUserId(row.id).then(res => {
+        this.allRoles = res.data.allRoles
+        this.userRoleIds = res.data.userRoleIds
+        console.log(this.allRoles)
+        console.log(this.userRoleIds)
+        this.checkAll = this.userRoleIds.length === this.allRoles.length
+        this.isIndeterminate = this.userRoleIds.length > 0 && this.userRoleIds.length < this.allRoles.length
+      })
+    },
+    // 全选勾选状态发生改变的监听
+    handleCheckAllChange(value) { // value 当前勾选状态true/false
+      // 如果当前全选，userRoleIds就是所有角色id的数组，否则是空数组
+      this.userRoleIds = value ? this.allRoles.map(item => item.id) : []
+      // 当前不是全选也不全不选时，指定为false
+      this.isIndeterminate = false
+    },
+    // 角色列表选中项发生改变的监听
+    handleCheckedChange(value) {
+      const { userRoleIds, allRoles } = this
+      this.checkAll = userRoleIds.length === allRoles.length && allRoles.length > 0
+      this.isIndeterminate = userRoleIds.length > 0 && userRoleIds.length < allRoles.length
+    },
+    // 分配角色
+    assignRole() {
+      const assignRoleVo = {
+        userId: this.sysUser.id,
+        roleIdList: this.userRoleIds
+      }
+      roleApi.assignRoles(assignRoleVo).then(res => {
+        this.$message.success(res.message || '分配角色成功')
+        this.dialogRoleVisible = false
+        this.getData(this.page)
       })
     }
   }

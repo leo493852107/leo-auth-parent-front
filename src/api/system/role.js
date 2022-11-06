@@ -42,6 +42,19 @@ export default {
       method: 'delete',
       data: ids
     })
+  },
+  getRolesByUserId(userId) {
+    return request({
+      url: `${api_name}toAssign/${userId}`,
+      method: 'get'
+    })
+  },
+  assignRoles(assignRoleVo) {
+    return request({
+      url: `${api_name}doAssign`,
+      method: 'post',
+      data: assignRoleVo
+    })
   }
 }
 
