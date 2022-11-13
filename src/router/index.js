@@ -151,6 +151,21 @@ export const asyncRoutes = [
         component: () => import('@/views/system/sysUser/List'),
         name: 'SysUser',
         meta: { title: '用户管理', icon: 'tree' }
+      },
+      {
+        name: 'sysMenu',
+        path: 'sysMenu',
+        component: () => import('@/views/system/sysMenu/List'),
+        meta: { title: '菜单管理', icon: 'el-icon-s-unfold' }
+      },
+      {
+        path: 'assignAuth',
+        component: () => import('@/views/system/sysRole/AssignAuth'),
+        meta: {
+          activeMenu: '/system/sysRole',
+          title: '角色授权'
+        },
+        hidden: true
       }
     ]
   },
